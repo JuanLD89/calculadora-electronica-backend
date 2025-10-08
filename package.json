@@ -1,1 +1,15 @@
+{
+  "name": "calculadora-electronica-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "packageManager": "npm@10.8.2",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
 
