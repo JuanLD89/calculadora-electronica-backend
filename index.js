@@ -13,7 +13,9 @@ app.get("/", (req, res) => {
 
 // Ruta de cálculo
 app.post("/calcular", (req, res) => {
+  console.log("📥 Datos recibidos:", req.body);
   const { formula, valores } = req.body ?? {};
+  console.log("🧪 formula =", formula, "valores =", valores);
   if (!formula || !valores) {
     console.log("⚠️ Faltan datos:", req.body);
     return res.status(400).json({ error: "Faltan datos: formula y valores" });
