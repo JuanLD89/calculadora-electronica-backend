@@ -72,9 +72,5 @@ app.post("/calcular", (req, res) => {
   return res.json({ resultado });
 });
 
-module.exports = app;
-
-
-
 export default app;
 
