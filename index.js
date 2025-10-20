@@ -1,5 +1,5 @@
-import express from "express";
-import cors from "cors";
+const express = require("express");
+const cors = require("cors");
 
 const app = express();
 
@@ -14,47 +14,49 @@ app.get("/", (req, res) => {
 // Ruta de cálculo
 app.post("/calcular", (req, res) => {
   const { formula, valores } = req.body ?? {};
-  if (!formula || !valores)
+  if (!formula || !valores) {
     return res.status(400).json({ error: "Faltan datos: formula y valores" });
+  }
 
   let resultado;
+
   try {
     switch (formula) {
-      // 🧮 LEY DE OHM general (solo voltaje)
-      case "ohm": // V = I * R
+      // 🧮 Ley de Ohm: Voltaje
+      case "ohm":
       case "ohm_voltaje":
         resultado = Number(valores.I) * Number(valores.R);
         break;
 
-      // 🔌 Corriente (I = V / R)
+      // ⚡ Corriente
       case "ohm_corriente":
         resultado = Number(valores.V) / Number(valores.R);
         break;
 
-      // 🧲 Resistencia (R = V / I)
+      // 🧲 Resistencia
       case "ohm_resistencia":
         resultado = Number(valores.V) / Number(valores.I);
         break;
 
-      // ⚡ Potencia (P = V × I)
+      // 🔋 Potencia
       case "potencia":
         resultado = Number(valores.V) * Number(valores.I);
         break;
 
-      // 🧱 Resistencias en serie
+      // 🧱 Serie
       case "res_serie":
         resultado = Number(valores.R1) + Number(valores.R2);
         break;
 
-      // 🔀 Resistencias en paralelo
+      // 🔀 Paralelo
       case "res_paralelo": {
-        const R1 = Number(valores.R1),
-          R2 = Number(valores.R2);
+        const R1 = Number(valores.R1);
+        const R2 = Number(valores.R2);
         resultado = 1 / (1 / R1 + 1 / R2);
         break;
       }
 
-      // ⚙️ Divisor de tensión
+      // ⚙️ Divisor
       case "divisor":
         resultado =
           Number(valores.Vin) *
@@ -65,11 +67,16 @@ app.post("/calcular", (req, res) => {
         return res.status(400).json({ error: "Fórmula no soportada" });
     }
   } catch (e) {
-    return res.status(500).json({ error: "Error en cálculo", detail: String(e) });
+    return res
+      .status(500)
+      .json({ error: "Error en cálculo", detail: String(e) });
   }
 
   return res.json({ resultado });
 });
+
+module.exports = app;
+
 
 
 export default app;
