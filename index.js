@@ -3,7 +3,6 @@ import cors from "cors";
 
 const app = express();
 
-// Habilitamos CORS (durante desarrollo: permite todas las fuentes)
 app.use(cors());
 app.use(express.json());
 
@@ -21,27 +20,47 @@ app.post("/calcular", (req, res) => {
   let resultado;
   try {
     switch (formula) {
+      // 🧮 LEY DE OHM general (solo voltaje)
       case "ohm": // V = I * R
+      case "ohm_voltaje":
         resultado = Number(valores.I) * Number(valores.R);
         break;
-      case "potencia": // P = V * I
+
+      // 🔌 Corriente (I = V / R)
+      case "ohm_corriente":
+        resultado = Number(valores.V) / Number(valores.R);
+        break;
+
+      // 🧲 Resistencia (R = V / I)
+      case "ohm_resistencia":
+        resultado = Number(valores.V) / Number(valores.I);
+        break;
+
+      // ⚡ Potencia (P = V × I)
+      case "potencia":
         resultado = Number(valores.V) * Number(valores.I);
         break;
-      case "res_serie": // Rtotal = R1 + R2
+
+      // 🧱 Resistencias en serie
+      case "res_serie":
         resultado = Number(valores.R1) + Number(valores.R2);
         break;
-      case "res_paralelo": // Rtotal = 1 / (1/R1 + 1/R2)
-        {
-          const R1 = Number(valores.R1),
-            R2 = Number(valores.R2);
-          resultado = 1 / (1 / R1 + 1 / R2);
-        }
+
+      // 🔀 Resistencias en paralelo
+      case "res_paralelo": {
+        const R1 = Number(valores.R1),
+          R2 = Number(valores.R2);
+        resultado = 1 / (1 / R1 + 1 / R2);
         break;
-      case "divisor": // Vout = Vin * R2/(R1+R2)
+      }
+
+      // ⚙️ Divisor de tensión
+      case "divisor":
         resultado =
           Number(valores.Vin) *
           (Number(valores.R2) / (Number(valores.R1) + Number(valores.R2)));
         break;
+
       default:
         return res.status(400).json({ error: "Fórmula no soportada" });
     }
@@ -52,6 +71,6 @@ app.post("/calcular", (req, res) => {
   return res.json({ resultado });
 });
 
-// 👇 Esto es lo correcto para Vercel (NO app.listen)
+
 export default app;
 
