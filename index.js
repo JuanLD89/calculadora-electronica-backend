@@ -32,8 +32,20 @@ app.post("/calcular", (req, res) => {
     case "ohm_resistencia":
       resultado = Number(valores.V) / Number(valores.I);
       break;
-    case "potencia":
-      resultado = Number(valores.V) * Number(valores.I);
+    case "potencia": // P = V * I
+    resultado = Number(valores.V) * Number(valores.I);
+    break;
+    case "potencia_voltaje": // V = P / I
+      if (valores.P == null || valores.I == null) {
+        return res.status(400).json({ error: "Faltan datos: P e I" });
+      }
+      resultado = Number(valores.P) / Number(valores.I);
+      break;
+    case "potencia_corriente": // I = P / V
+      if (valores.P == null || valores.V == null) {
+        return res.status(400).json({ error: "Faltan datos: P y V" });
+      }
+      resultado = Number(valores.P) / Number(valores.V);
       break;
     case "res_serie":
       resultado = Number(valores.R1) + Number(valores.R2);
