@@ -48,7 +48,8 @@ app.post("/calcular", (req, res) => {
       resultado = Number(valores.P) / Number(valores.V);
       break;
     case "res_serie":
-      resultado = Number(valores.R1) + Number(valores.R2);
+      const resistencias = Object.values(valores).map(Number);
+      resultado = resistencias.reduce((acc, r) => acc + r, 0);
       break;
     case "res_paralelo":
       const R1 = Number(valores.R1);
