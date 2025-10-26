@@ -70,27 +70,44 @@ app.post("/calcular", (req, res) => {
 
     case "divisor_corriente": {
       console.log("Valores recibidos:", valores);
-
+    
       const { It, ...resistencias } = valores;
     
-      if (!It) return res.status(400).json({ error: "Falta corriente total It" });
+      if (!It)
+        return res.status(400).json({ error: "Falta corriente total It" });
     
       const Rs = Object.values(resistencias)
         .map(Number)
         .filter((r) => r > 0);
     
       if (Rs.length < 1)
-        return res.status(400).json({ error: "Se requieren al menos 1 resistencia válida" });
+        return res
+          .status(400)
+          .json({ error: "Se requieren al menos 1 resistencia válida" });
     
       // Resistencia equivalente total
       const Rt = 1 / Rs.reduce((suma, r) => suma + 1 / r, 0);
     
-      // Corrientes individuales (divisor de corriente general)
-      const corrientes = Rs.map((r) => (Number(It) * Rt) / r);
+      // Tensión común (misma en paralelo)
+      const V = Number(It) * Rt;
     
-      resultado = { Rt, corrientes };
+      // Corrientes individuales (divisor de corriente general)
+      const corrientes = Rs.map((r, i) => ({
+        etiqueta: `R${i + 1}`,
+        I: (V / r),
+      }));
+    
+      // Formateo de texto legible (multilínea)
+      const texto = [
+        ...corrientes.map((c) => `${c.etiqueta}: ${c.I.toFixed(3)} A`),
+        `V (tensión común): ${V.toFixed(3)} V`,
+        `Rt: ${Rt.toFixed(3)} Ω`,
+      ].join("\n");
+    
+      resultado = texto; // se envía como texto, no objeto
       break;
     }
+
 
 
       
