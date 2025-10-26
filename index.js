@@ -51,11 +51,18 @@ app.post("/calcular", (req, res) => {
       const resistencias = Object.values(valores).map(Number);
       resultado = resistencias.reduce((acc, r) => acc + r, 0);
       break;
-    case "res_paralelo":
-      const R1 = Number(valores.R1);
-      const R2 = Number(valores.R2);
-      resultado = 1 / (1 / R1 + 1 / R2);
+    case "res_paralelo": {
+      const resistencias = Object.values(valores).map(Number).filter((r) => r > 0);
+    
+      if (resistencias.length < 2) {
+        return res.status(400).json({ error: "Se requieren al menos 2 resistencias" });
+      }
+    
+      const inversaTotal = resistencias.reduce((suma, r) => suma + 1 / r, 0);
+      resultado = 1 / inversaTotal;
       break;
+      }
+
     case "divisor":
       resultado =
         Number(valores.Vin) *
