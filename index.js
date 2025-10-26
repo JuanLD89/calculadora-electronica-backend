@@ -69,6 +69,8 @@ app.post("/calcular", (req, res) => {
       break;
 
     case "divisor_corriente": {
+      console.log("Valores recibidos:", valores);
+
       const { It, ...resistencias } = valores;
     
       if (!It) return res.status(400).json({ error: "Falta corriente total It" });
