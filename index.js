@@ -62,7 +62,26 @@ app.post("/calcular", (req, res) => {
       resultado = 1 / inversaTotal;
       break;
       }
-
+    case "divisor_corriente": {
+      const { It, R1, R2 } = valores;
+    
+      if (!It || !R1 || !R2)
+        return res.json({ error: "Faltan valores (It, R1, R2)" });
+    
+      // Calculamos la resistencia total (en paralelo)
+      const Rt = 1 / (1 / parseFloat(R1) + 1 / parseFloat(R2));
+    
+      // Corriente por R1 y R2
+      const I1 = parseFloat(It) * (Rt / parseFloat(R1));
+      const I2 = parseFloat(It) * (Rt / parseFloat(R2));
+    
+      data.resultado = {
+        I1,
+        I2,
+        Rt,
+      };  
+      break;
+      }
     case "divisor":
       resultado =
         Number(valores.Vin) *
