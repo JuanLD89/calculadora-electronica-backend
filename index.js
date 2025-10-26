@@ -68,18 +68,66 @@ app.post("/calcular", (req, res) => {
         (Number(valores.R2) / (Number(valores.R1) + Number(valores.R2)));
       break;
 
-    case "divisor_corriente":
-      const { It, R1, R2 } = valores;
-  
-      if (!It || !R1 || !R2)
-        return res.json({ error: "Faltan valores (It, R1, R2)" });
-  
-      const Rt = 1 / (1 / parseFloat(R1) + 1 / parseFloat(R2));
-      const I1 = parseFloat(It) * (Rt / parseFloat(R1));
-      const I2 = parseFloat(It) * (Rt / parseFloat(R2));
-  
-      resultado = { I1, I2, Rt };
+    case "divisor_corriente": {
+      // Esperamos en valores: It (corriente total) y R1, R2, R3, ... Rn
+      const { It, ...rest } = valores ?? {};
+    
+      // Validaciones básicas
+      if (It == null) {
+        return res.status(400).json({ error: "Falta corriente total (It)" });
+      }
+    
+      const resistencias = Object.values(rest)
+        .map((v) => Number(v))
+        .filter((r) => !isNaN(r) && r > 0);
+    
+      if (resistencias.length < 1) {
+        return res.status(400).json({ error: "Se requieren al menos 1 resistencia válida" });
+      }
+    
+      // Resistencias originales con sus claves (R1, R2, ...)
+      const entradas = Object.entries(rest)
+        .filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== "");
+    
+      // Convertir a números y construir mapa clave -> número
+      const mapa = {};
+      entradas.forEach(([k, v]) => {
+        const num = Number(v);
+        if (!isNaN(num) && num > 0) mapa[k] = num;
+      });
+    
+      // Recalcular con solo resistencias válidas (manteniendo claves)
+      const valoresRes = Object.values(mapa);
+      if (valoresRes.length < 1) {
+        return res.status(400).json({ error: "No hay resistencias válidas (R1,R2,...)" });
+      }
+    
+      // Rt = 1 / sum(1/Ri)
+      const sumaInversas = valoresRes.reduce((s, r) => s + 1 / r, 0);
+      const Rt = 1 / sumaInversas;
+    
+      const ItNum = Number(It);
+      if (isNaN(ItNum)) return res.status(400).json({ error: "It debe ser un número" });
+    
+      // Corriente en cada resistencia: I_x = It * Rt / R_x
+      const corrientesMap = {};
+      Object.entries(mapa).forEach(([k, r]) => {
+        const Ix = ItNum * (Rt / r);
+        corrientesMap[k] = Ix;
+      });
+    
+      // También devolvemos V (tensión común en las ramas)
+      const V = ItNum * Rt;
+    
+      resultado = {
+        Rt,
+        V,
+        corrientes: corrientesMap, // { R1: 0.1, R2: 0.2, ... }
+      };
+    
       break;
+    }
+
       
     default:
       console.log("🚫 Fórmula no soportada:", f);
