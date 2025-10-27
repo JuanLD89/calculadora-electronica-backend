@@ -72,29 +72,31 @@ app.post("/calcular", (req, res) => {
       console.log("Valores recibidos:", valores);
     
       const { It, ...resistencias } = valores;
+      const ItNum = Number(It);
     
-      if (!It)
-        return res.status(400).json({ error: "Falta corriente total It" });
+      console.log("It numérico:", ItNum, "Tipo:", typeof ItNum);
+    
+      if (isNaN(ItNum)) {
+        return res.status(400).json({ error: "Corriente total It no es un número válido" });
+      }
     
       const Rs = Object.values(resistencias)
         .map(Number)
         .filter((r) => r > 0);
     
       if (Rs.length < 1)
-        return res
-          .status(400)
-          .json({ error: "Se requieren al menos 1 resistencia válida" });
+        return res.status(400).json({ error: "Se requieren al menos 1 resistencia válida" });
     
       // Resistencia equivalente total
       const Rt = 1 / Rs.reduce((suma, r) => suma + 1 / r, 0);
     
       // Tensión común (misma en paralelo)
-      const V = Number(It) * Rt;
+      const V = ItNum * Rt;
     
       // Corrientes individuales (divisor de corriente general)
       const corrientes = Rs.map((r, i) => ({
         etiqueta: `R${i + 1}`,
-        I: (V / r),
+        I: V / r,
       }));
     
       // Formateo de texto legible (multilínea)
@@ -104,9 +106,10 @@ app.post("/calcular", (req, res) => {
         `Rt: ${Rt.toFixed(3)} Ω`,
       ].join("\n");
     
-      resultado = texto; // se envía como texto, no objeto
+      resultado = texto; // se envía como texto
       break;
     }
+
 
 
 
