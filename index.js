@@ -69,27 +69,33 @@ app.post("/calcular", (req, res) => {
       break;
 
     case "divisor_corriente": {
-      console.log("Valores recibidos en divisor_corriente:", valores);
+      console.log("📥 Valores recibidos en divisor_corriente:", valores);
     
       const { It, ...resistencias } = valores;
-      const ItNum = parseFloat(It);
     
-      if (isNaN(ItNum) || ItNum <= 0) {
-        return res.status(400).json({ error: `It inválido: ${It}` });
+      console.log("🧩 It recibido:", It);
+      console.log("🧩 Resistencias recibidas:", resistencias);
+    
+      // Conviértelo a número
+      const ItNum = Number(It);
+      console.log("🔢 ItNum:", ItNum);
+    
+      const Rs = Object.values(resistencias).map(Number);
+      console.log("🔢 Rs antes de filtrar:", Rs);
+    
+      // Verifica si alguno es NaN
+      if (Rs.some((r) => isNaN(r))) {
+        return res.status(400).json({ error: `Valores inválidos detectados: ${Rs}` });
       }
     
-      // Filtramos y validamos resistencias
-      const Rs = Object.values(resistencias)
-        .map((r) => parseFloat(r))
-        .filter((r) => !isNaN(r) && r > 0);
+      const RsFiltradas = Rs.filter((r) => r > 0);
+      if (RsFiltradas.length < 1)
+        return res.status(400).json({ error: "Se requieren resistencias válidas" });
     
-      if (Rs.length < 1) {
-        return res.status(400).json({ error: "No hay resistencias válidas" });
-      }
-    
-      const Rt = 1 / Rs.reduce((suma, r) => suma + 1 / r, 0);
+      const Rt = 1 / RsFiltradas.reduce((suma, r) => suma + 1 / r, 0);
       const V = ItNum * Rt;
-      const corrientes = Rs.map((r, i) => ({
+    
+      const corrientes = RsFiltradas.map((r, i) => ({
         etiqueta: `R${i + 1}`,
         I: V / r,
       }));
@@ -100,7 +106,7 @@ app.post("/calcular", (req, res) => {
         `Rt: ${Rt.toFixed(3)} Ω`,
       ].join("\n");
     
-      console.log("✅ Resultado texto:\n", texto);
+      console.log("✅ Resultado final:", texto);
       resultado = texto;
       break;
     }
