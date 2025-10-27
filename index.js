@@ -72,56 +72,39 @@ app.post("/calcular", (req, res) => {
       console.log("Valores recibidos en divisor_corriente:", valores);
     
       const { It, ...resistencias } = valores;
-    
-      // 🔍 Mostrar cada resistencia con su valor original
-      console.log("Resistencias (raw):", resistencias);
-    
       const ItNum = parseFloat(It);
-      console.log("It convertido:", ItNum);
     
-      if (isNaN(ItNum)) {
+      if (isNaN(ItNum) || ItNum <= 0) {
         return res.status(400).json({ error: `It inválido: ${It}` });
       }
     
+      // Filtramos y validamos resistencias
       const Rs = Object.values(resistencias)
-        .map((r, i) => {
-          const num = parseFloat(r);
-          console.log(`R${i + 1}: raw=${r}, num=${num}`);
-          return num;
-        })
-        .filter((r) => r > 0);
+        .map((r) => parseFloat(r))
+        .filter((r) => !isNaN(r) && r > 0);
     
-      console.log("Rs numéricas filtradas:", Rs);
+      if (Rs.length < 1) {
+        return res.status(400).json({ error: "No hay resistencias válidas" });
+      }
     
-      if (Rs.length < 1)
-        return res.status(400).json({ error: "Se requieren al menos 1 resistencia válida" });
-    
-      // Calcular Rt
       const Rt = 1 / Rs.reduce((suma, r) => suma + 1 / r, 0);
-      console.log("Rt calculada:", Rt);
-    
-      // Calcular tensión común
       const V = ItNum * Rt;
-      console.log("Tensión común (V):", V);
-    
-      // Calcular corrientes individuales
       const corrientes = Rs.map((r, i) => ({
         etiqueta: `R${i + 1}`,
         I: V / r,
       }));
     
-      console.log("Corrientes individuales:", corrientes);
-    
-      // Texto formateado
       const texto = [
         ...corrientes.map((c) => `${c.etiqueta}: ${c.I.toFixed(3)} A`),
         `V (tensión común): ${V.toFixed(3)} V`,
         `Rt: ${Rt.toFixed(3)} Ω`,
       ].join("\n");
     
+      console.log("✅ Resultado texto:\n", texto);
       resultado = texto;
       break;
     }
+
 
 
 
