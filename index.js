@@ -69,46 +69,60 @@ app.post("/calcular", (req, res) => {
       break;
 
     case "divisor_corriente": {
-      console.log("Valores recibidos:", valores);
+      console.log("Valores recibidos en divisor_corriente:", valores);
     
       const { It, ...resistencias } = valores;
-      const ItNum = Number(It);
     
-      console.log("It numérico:", ItNum, "Tipo:", typeof ItNum);
+      // 🔍 Mostrar cada resistencia con su valor original
+      console.log("Resistencias (raw):", resistencias);
+    
+      const ItNum = parseFloat(It);
+      console.log("It convertido:", ItNum);
     
       if (isNaN(ItNum)) {
-        return res.status(400).json({ error: "Corriente total It no es un número válido" });
+        return res.status(400).json({ error: `It inválido: ${It}` });
       }
     
       const Rs = Object.values(resistencias)
-        .map(Number)
+        .map((r, i) => {
+          const num = parseFloat(r);
+          console.log(`R${i + 1}: raw=${r}, num=${num}`);
+          return num;
+        })
         .filter((r) => r > 0);
+    
+      console.log("Rs numéricas filtradas:", Rs);
     
       if (Rs.length < 1)
         return res.status(400).json({ error: "Se requieren al menos 1 resistencia válida" });
     
-      // Resistencia equivalente total
+      // Calcular Rt
       const Rt = 1 / Rs.reduce((suma, r) => suma + 1 / r, 0);
+      console.log("Rt calculada:", Rt);
     
-      // Tensión común (misma en paralelo)
+      // Calcular tensión común
       const V = ItNum * Rt;
+      console.log("Tensión común (V):", V);
     
-      // Corrientes individuales (divisor de corriente general)
+      // Calcular corrientes individuales
       const corrientes = Rs.map((r, i) => ({
         etiqueta: `R${i + 1}`,
         I: V / r,
       }));
     
-      // Formateo de texto legible (multilínea)
+      console.log("Corrientes individuales:", corrientes);
+    
+      // Texto formateado
       const texto = [
         ...corrientes.map((c) => `${c.etiqueta}: ${c.I.toFixed(3)} A`),
         `V (tensión común): ${V.toFixed(3)} V`,
         `Rt: ${Rt.toFixed(3)} Ω`,
       ].join("\n");
     
-      resultado = texto; // se envía como texto
+      resultado = texto;
       break;
     }
+
 
 
 
